@@ -79,6 +79,57 @@ async function setup() {
     'ACTIONS_RUNTIME_TOKEN',
     process.env.ACTIONS_RUNTIME_TOKEN || ''
   );
+
+  configureTosBackend();
+}
+
+// Translate the TOS env convention (shared with rust-cache) into the
+// S3-compatible variables that the sccache binary understands. Explicitly set
+// SCCACHE_*/AWS_* variables always win over these defaults.
+function configureTosBackend() {
+  const bucket = process.env['BUCKET_NAME'];
+  if (!bucket) {
+    return;
+  }
+  core.info('configure sccache to use TOS (S3-compatible) backend');
+
+  exportIfUnset('SCCACHE_BUCKET', bucket);
+
+  const region = process.env['REGION'];
+  if (region) {
+    exportIfUnset('SCCACHE_REGION', region);
+  }
+
+  const endpoint = process.env['ENDPOINT'];
+  if (endpoint) {
+    exportIfUnset('SCCACHE_ENDPOINT', endpoint);
+    exportIfUnset('SCCACHE_S3_USE_SSL', 'false');
+  } else if (region) {
+    exportIfUnset('SCCACHE_ENDPOINT', `tos-s3-${region}.volces.com`);
+    exportIfUnset('SCCACHE_S3_USE_SSL', 'true');
+  }
+
+  const accessKey = process.env['ACCESS_KEY'];
+  if (accessKey) {
+    exportIfUnset('AWS_ACCESS_KEY_ID', accessKey);
+  }
+  const secretKey = process.env['SECRET_KEY'];
+  if (secretKey) {
+    exportIfUnset('AWS_SECRET_ACCESS_KEY', secretKey);
+  }
+
+  const repo = process.env['GITHUB_REPOSITORY'];
+  if (repo) {
+    exportIfUnset('SCCACHE_S3_KEY_PREFIX', repo);
+  }
+}
+
+function exportIfUnset(name: string, value: string) {
+  if (process.env[name]) {
+    core.info(`${name} already set, keep existing value`);
+    return;
+  }
+  core.exportVariable(name, value);
 }
 /**
  * @param version sccache version

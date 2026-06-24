@@ -97,6 +97,40 @@ With configure, call it with:
 ./configure CC="sccache clang" CXX="sccache clang"
 ```
 
+### Use TOS (Volcengine Object Storage) as the backend
+
+sccache stores its cache through its own S3-compatible backend, so this action
+only translates the TOS env convention (shared with `rust-cache`) into the
+`SCCACHE_*` / `AWS_*` variables that the sccache binary reads. Set the following
+env, and the action wires up the rest:
+
+```yml
+- name: Run sccache-cache
+  uses: mozilla-actions/sccache-action@v0.0.10
+  env:
+    BUCKET_NAME: my-sccache-bucket
+    REGION: cn-beijing
+    ENDPOINT: tos-s3-cn-beijing.volces.com # S3-compatible domain, note the `tos-s3-` prefix
+    ACCESS_KEY: ${{ secrets.TOS_ACCESS_KEY }}
+    SECRET_KEY: ${{ secrets.TOS_SECRET_KEY }}
+- name: Set Rust caching env vars
+  run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+```
+
+Notes:
+
+- The S3-compatible endpoint differs from the native TOS SDK domain: use the
+  `tos-s3-` prefix (e.g. `tos-s3-cn-beijing.volces.com`), not
+  `tos-cn-beijing.volces.com`.
+- When `ENDPOINT` is omitted, it is derived as `tos-s3-${REGION}.volces.com`
+  with SSL enabled. When `ENDPOINT` is set, SSL defaults to off (matching an
+  internal/custom endpoint); override it with `SCCACHE_S3_USE_SSL` if needed.
+- Cache objects are namespaced under `SCCACHE_S3_KEY_PREFIX`, defaulting to
+  `${GITHUB_REPOSITORY}`.
+- Any explicitly set `SCCACHE_*` / `AWS_*` variable takes precedence over the
+  translation above.
+- Do not set `SCCACHE_GHA_ENABLED` when using TOS.
+
 ## Using on GitHub Enterprise Server (GHES)
 
 When using the action on GitHub Enterprise Server installations a valid GitHub.com token must be provided.
