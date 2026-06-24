@@ -8,6 +8,23 @@ sccache can easily use GitHub actions cache with almost no configuration.
 This action is available on:
 https://github.com/marketplace/actions/sccache-action
 
+## Notice
+
+This action is forked from [mozilla/sccache-action](https://github.com/mozilla/sccache-action). It adds a **TOS (Volcengine Object Storage, S3-compatible) backend** so that Rspack's self-hosted CI can cache compilation results in TOS, reusing the same credential convention as [`rstackjs/rust-cache`](https://github.com/rstackjs/rust-cache).
+
+The action is a drop-in replacement: when `BUCKET_NAME` is not set, its behaviour is identical to upstream.
+
+> Big thanks to `mozilla/sccache-action` creators and contributors for their great work. ❤️
+
+## Diff
+
+Differences with [mozilla/sccache-action](https://github.com/mozilla/sccache-action):
+
+- Added TOS (S3-compatible) backend
+  - Translates the `rust-cache` TOS env convention (`BUCKET_NAME` / `REGION` / `ENDPOINT` / `ACCESS_KEY` / `SECRET_KEY`) into the `SCCACHE_*` / `AWS_*` variables that the sccache binary reads
+  - Explicitly set `SCCACHE_*` / `AWS_*` variables still take precedence
+  - No behaviour change when `BUCKET_NAME` is absent
+
 ## Usage
 
 Just copy and paste the following in your GitHub action:
