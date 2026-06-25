@@ -105,7 +105,7 @@ function configureTosBackend() {
     exportIfUnset('SCCACHE_ENDPOINT', endpoint);
     exportIfUnset('SCCACHE_S3_USE_SSL', 'false');
   } else if (region) {
-    exportIfUnset('SCCACHE_ENDPOINT', `tos-s3-${region}.volces.com`);
+    exportIfUnset('SCCACHE_ENDPOINT', `tos-${region}.bytepluses.com`);
     exportIfUnset('SCCACHE_S3_USE_SSL', 'true');
   }
 
