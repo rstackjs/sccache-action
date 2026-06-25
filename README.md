@@ -136,10 +136,12 @@ env, and the action wires up the rest:
 
 Notes:
 
-- The S3-compatible endpoint differs from the native TOS SDK domain: use the
-  `tos-s3-` prefix (e.g. `tos-s3-cn-beijing.volces.com`), not
-  `tos-cn-beijing.volces.com`.
-- When `ENDPOINT` is omitted, it is derived as `tos-${REGION}.bytepluses.com`
+- The S3-compatible API needs the `tos-s3-` host, not the native TOS SDK domain.
+  A native `ENDPOINT` (e.g. `tos-cn-beijing.volces.com`, shared with
+  `rust-cache`) is rewritten to its S3-compatible form
+  (`tos-s3-cn-beijing.volces.com`) automatically. The native host rejects AWS
+  SigV4 with `Unsupported Authorization Type` (`EC 0002-00000002`).
+- When `ENDPOINT` is omitted, it is derived as `tos-s3-${REGION}.bytepluses.com`
   with SSL enabled. When `ENDPOINT` is set, SSL defaults to off (matching an
   internal/custom endpoint); override it with `SCCACHE_S3_USE_SSL` if needed.
 - `SCCACHE_S3_ENABLE_VIRTUAL_HOST_STYLE` defaults to `true`: TOS's S3-compatible

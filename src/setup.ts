@@ -102,10 +102,10 @@ function configureTosBackend() {
 
   const endpoint = process.env['ENDPOINT'];
   if (endpoint) {
-    exportIfUnset('SCCACHE_ENDPOINT', endpoint);
+    exportIfUnset('SCCACHE_ENDPOINT', toS3Endpoint(endpoint));
     exportIfUnset('SCCACHE_S3_USE_SSL', 'false');
   } else if (region) {
-    exportIfUnset('SCCACHE_ENDPOINT', `tos-${region}.bytepluses.com`);
+    exportIfUnset('SCCACHE_ENDPOINT', `tos-s3-${region}.bytepluses.com`);
     exportIfUnset('SCCACHE_S3_USE_SSL', 'true');
   }
 
@@ -126,6 +126,13 @@ function configureTosBackend() {
   if (repo) {
     exportIfUnset('SCCACHE_S3_KEY_PREFIX', repo);
   }
+}
+
+// A native TOS endpoint (tos-<region>.<suffix>) only accepts TOS's own
+// signature and rejects AWS SigV4 with "Unsupported Authorization Type"
+// (EC 0002-00000002). The S3-compatible host inserts an `s3` segment.
+function toS3Endpoint(endpoint: string): string {
+  return endpoint.replace(/^(https?:\/\/)?tos-(?!s3-)/i, '$1tos-s3-');
 }
 
 function exportIfUnset(name: string, value: string) {
