@@ -139,9 +139,12 @@ Notes:
 - The S3-compatible endpoint differs from the native TOS SDK domain: use the
   `tos-s3-` prefix (e.g. `tos-s3-cn-beijing.volces.com`), not
   `tos-cn-beijing.volces.com`.
-- When `ENDPOINT` is omitted, it is derived as `tos-s3-${REGION}.volces.com`
+- When `ENDPOINT` is omitted, it is derived as `tos-${REGION}.bytepluses.com`
   with SSL enabled. When `ENDPOINT` is set, SSL defaults to off (matching an
   internal/custom endpoint); override it with `SCCACHE_S3_USE_SSL` if needed.
+- `SCCACHE_S3_ENABLE_VIRTUAL_HOST_STYLE` defaults to `true`: TOS's S3-compatible
+  API rejects path-style requests with `InvalidPathAccess`
+  (`EC 0003-00000002`) and only accepts virtual-hosted style.
 - Cache objects are namespaced under `SCCACHE_S3_KEY_PREFIX`, defaulting to
   `${GITHUB_REPOSITORY}`.
 - Any explicitly set `SCCACHE_*` / `AWS_*` variable takes precedence over the

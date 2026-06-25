@@ -109,6 +109,10 @@ function configureTosBackend() {
     exportIfUnset('SCCACHE_S3_USE_SSL', 'true');
   }
 
+  // TOS S3-compatible API rejects path-style requests with InvalidPathAccess
+  // (EC 0003-00000002); it only accepts virtual-hosted style.
+  exportIfUnset('SCCACHE_S3_ENABLE_VIRTUAL_HOST_STYLE', 'true');
+
   const accessKey = process.env['ACCESS_KEY'];
   if (accessKey) {
     exportIfUnset('AWS_ACCESS_KEY_ID', accessKey);
