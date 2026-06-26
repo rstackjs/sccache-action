@@ -103,9 +103,11 @@ function configureTosBackend() {
   const endpoint = process.env['ENDPOINT'];
   if (endpoint) {
     exportIfUnset('SCCACHE_ENDPOINT', toS3Endpoint(endpoint));
-    exportIfUnset('SCCACHE_S3_USE_SSL', 'false');
+    exportIfUnset('SCCACHE_S3_USE_SSL', 'true');
   } else if (region) {
-    exportIfUnset('SCCACHE_ENDPOINT', `tos-s3-${region}.bytepluses.com`);
+    const domain =
+      process.platform === 'darwin' ? 'volces.com' : 'bytepluses.com';
+    exportIfUnset('SCCACHE_ENDPOINT', `tos-s3-${region}.${domain}`);
     exportIfUnset('SCCACHE_S3_USE_SSL', 'true');
   }
 

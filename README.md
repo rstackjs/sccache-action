@@ -141,9 +141,9 @@ Notes:
   `rust-cache`) is rewritten to its S3-compatible form
   (`tos-s3-cn-beijing.volces.com`) automatically. The native host rejects AWS
   SigV4 with `Unsupported Authorization Type` (`EC 0002-00000002`).
-- When `ENDPOINT` is omitted, it is derived as `tos-s3-${REGION}.bytepluses.com`
-  with SSL enabled. When `ENDPOINT` is set, SSL defaults to off (matching an
-  internal/custom endpoint); override it with `SCCACHE_S3_USE_SSL` if needed.
+- When `ENDPOINT` is omitted, it is derived as `tos-s3-${REGION}.<domain>`, where
+  `<domain>` is `volces.com` on macOS and `bytepluses.com` elsewhere. SSL is on
+  by default; override it with `SCCACHE_S3_USE_SSL` if needed.
 - `SCCACHE_S3_ENABLE_VIRTUAL_HOST_STYLE` defaults to `true`: TOS's S3-compatible
   API rejects path-style requests with `InvalidPathAccess`
   (`EC 0003-00000002`) and only accepts virtual-hosted style.
