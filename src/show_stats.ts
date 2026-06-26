@@ -16,6 +16,7 @@ import * as core from '@actions/core';
 import {context} from '@actions/github';
 import * as exec from '@actions/exec';
 import {SummaryTableRow} from '@actions/core/lib/summary';
+import * as fs from 'fs';
 
 async function get_output(command: string, args: string[]): Promise<string> {
   core.debug(`get_output: ${command} ${args.join(' ')}`);
@@ -29,7 +30,39 @@ async function get_output(command: string, args: string[]): Promise<string> {
   return output.stdout.toString();
 }
 
+function report_cache_misses() {
+  const logPath = process.env.SCCACHE_ERROR_LOG;
+  if (!logPath || !fs.existsSync(logPath)) {
+    return;
+  }
+  try {
+    const misses = new Set<string>();
+    const non_cacheable = new Set<string>();
+    const re = /\[([^\]]+)\]: compile result: (cache miss|not cacheable)/;
+    for (const line of fs.readFileSync(logPath, 'utf8').split('\n')) {
+      const m = line.match(re);
+      if (m) {
+        (m[2] === 'cache miss' ? misses : non_cacheable).add(m[1]);
+      }
+    }
+    print_units('sccache cache misses', misses);
+    print_units('sccache non-cacheable units', non_cacheable);
+  } catch (err) {
+    core.warning(`failed to report sccache misses: ${err}`);
+  }
+}
+
+function print_units(title: string, units: Set<string>) {
+  core.startGroup(`${title} (${units.size})`);
+  for (const unit of units) {
+    core.info(unit);
+  }
+  core.endGroup();
+}
+
 async function show_stats() {
+  report_cache_misses();
+
   const disable_annotations = core.getBooleanInput('disable_annotations');
   if (disable_annotations) {
     core.debug('annotations generation disabled');

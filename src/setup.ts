@@ -26,6 +26,10 @@ import * as fs from 'fs';
 
 import * as crypto from 'crypto';
 
+import * as os from 'os';
+
+import * as path from 'path';
+
 async function setup() {
   let version = core.getInput('version');
   if (version.length === 0) {
@@ -81,6 +85,27 @@ async function setup() {
   );
 
   configureTosBackend();
+  enableMissLogging();
+}
+
+// Make the sccache server record per-compilation results to a log file so the
+// post step can print cache misses and non-cacheable units. Server-module-only
+// debug keeps the build console quiet. Overridable via SCCACHE_LOG/_ERROR_LOG.
+function enableMissLogging() {
+  try {
+    exportIfUnset('SCCACHE_LOG', 'sccache::server=debug');
+    if (process.env['SCCACHE_ERROR_LOG']) {
+      return;
+    }
+    const logPath = path.join(
+      process.env['RUNNER_TEMP'] || os.tmpdir(),
+      'sccache.log'
+    );
+    fs.writeFileSync(logPath, '');
+    core.exportVariable('SCCACHE_ERROR_LOG', logPath);
+  } catch (err) {
+    core.warning(`failed to enable sccache miss logging: ${err}`);
+  }
 }
 
 // Translate the TOS env convention (shared with rust-cache) into the
